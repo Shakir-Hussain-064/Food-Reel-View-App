@@ -1,0 +1,66 @@
+/* Updated CSS Theme Variables for a dark aesthetic theme */
+:root {
+  --color-bg: #121212; /* Deep dark background */
+  --color-surface: #1e1e1e; /* Slightly lighter dark */
+  --color-surface-alt: #2a2a2a; /* Medium dark */
+  --color-border: #3a3a3a; /* Subtle border */
+  --color-text: #e0e0e0; /* Light gray for text */
+  --color-text-secondary: #a0a0a0; /* Muted gray for secondary text */
+  --color-accent: #bb86fc; /* Vibrant purple for buttons */
+  --color-accent-hover: #9a67ea; /* Darker purple for hover */
+  --color-danger: #cf6679; /* Soft red for danger */
+
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+
+  --font-stack: system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.5);
+  --shadow-md: 0 4px 18px -4px rgba(0,0,0,.5),0 2px 6px -2px rgba(0,0,0,.4);
+
+  --transition-base: 120ms cubic-bezier(.4,0,.2,1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #121212; /* Deep dark background */
+    --color-surface: #1e1e1e; /* Slightly lighter dark */
+    --color-surface-alt: #2a2a2a; /* Medium dark */
+    --color-border: #3a3a3a; /* Subtle border */
+    --color-text: #e0e0e0; /* Light gray for text */
+    --color-text-secondary: #a0a0a0; /* Muted gray for secondary text */
+    --color-accent: #bb86fc; /* Vibrant purple for buttons */
+    --color-accent-hover: #9a67ea; /* Darker purple for hover */
+    --color-danger: #cf6679; /* Soft red for danger */
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.5);
+    --shadow-md: 0 4px 18px -4px rgba(0,0,0,.5),0 2px 6px -2px rgba(0,0,0,.4);
+  }
+}
+
+/* Base element theming (can be imported once globally) */
+body {
+  font-family: var(--font-stack);
+  background: var(--color-bg);
+  color: var(--color-text);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.4;
+}
+
+a {
+  color: var(--color-accent);
+  text-decoration: none;
+  transition: color var(--transition-base);
+}
+
+a:hover, a:focus-visible { color: var(--color-accent-hover); }
+
+::selection { background: var(--color-accent); color: #fff; }
