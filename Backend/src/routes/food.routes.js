@@ -24,6 +24,12 @@ router.get('/',
     foodController.getFoodItems
 )
 
+/*GET  /api/food/:id   [protected] */
+router.get('/:id', 
+    authMiddleware.authUserMiddleware,
+    foodController.getFoodById
+)
+
 
 router.post('/like',
     authMiddleware.authUserMiddleware,

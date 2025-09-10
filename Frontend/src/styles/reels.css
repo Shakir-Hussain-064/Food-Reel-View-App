@@ -3,8 +3,50 @@
 /* Page container ensures full viewport and background */
 .reels-page {
   height: 100dvh;
-  background: var(--color-bg);
+  background: #000;
+}
+
+.reel-btn {
+  align-self: flex-start;
+  background: white;
+  color: black;
+  border-radius: 5px;
+  padding: 10px 16px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  text-decoration: none;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-base), background var(--transition-base), box-shadow var(--transition-base);
   overflow: hidden; /* parent hides overscroll glow on iOS */
+  position: relative;
+}
+
+/* Logout button container */
+.logout-container {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  cursor: pointer;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: rgba(0, 0, 0, 0.7);
+  transform: scale(1.05);
 }
 
 /* Vertical feed with snap scrolling */
@@ -84,12 +126,18 @@
   max-width: 90ch;
 }
 
+.reel-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .reel-btn {
   align-self: flex-start;
-  background: var(--color-accent);
-  color: #fff;
-  border-radius: 999px;
-  padding: 10px 16px;
+  background: white;
+  color: black;
+  border-radius: 5px;
+  padding: 8px 12px;
   font-weight: 700;
   letter-spacing: .3px;
   text-decoration: none;
@@ -100,6 +148,15 @@
 .reel-btn:hover { background: var(--color-accent-hover); }
 .reel-btn:active { transform: translateY(1px); }
 .reel-btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+
+.order-btn {
+  background: var(--color-primary, #fbfafb);
+  color: rgb(8, 9, 10);
+}
+
+.order-btn:hover {
+  background: var(--color-primary-dark, #ffffff);
+}
 
 /* Desktop tweaks */
 @media (min-width: 768px) {

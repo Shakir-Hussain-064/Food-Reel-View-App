@@ -54,22 +54,15 @@ const CreateFood = () => {
 
         formData.append('name', name);
         formData.append('description', description);
-        formData.append("video", videoFile);
+    // include the original filename for better content-type detection downstream
+    formData.append("video", videoFile, videoFile?.name || 'video.mp4');
 
         const response = await axios.post("http://localhost:3000/api/food", formData, {
             withCredentials: true,
-        });
+        })
 
-        console.log('Server Response:', response.data); // Debugging: Log the server response
-
-        const foodPartnerId = response.data.foodPartnerId; // Ensure this field exists in the response
-        if (!foodPartnerId) {
-            console.error('Error: foodPartnerId is undefined in the server response.');
-            return;
-        }
-
-        // Redirect to the respective profile page after successful creation
-        navigate(`/food-partner/${foodPartnerId}`);
+        console.log(response.data);
+        navigate("/"); // Redirect to home or another page after successful creation
         // Optionally reset
         // setName(''); setDescription(''); setVideoFile(null);
     };

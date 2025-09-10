@@ -22,6 +22,32 @@ async function getFoodPartnerById(req, res) {
     });
 }
 
+async function getCurrentFoodPartner(req, res) {
+    try {
+        // The food partner will be available from the auth middleware
+        if (!req.foodPartner) {
+            return res.status(401).json({ message: "Not authenticated as a food partner" });
+        }
+
+        const foodPartner = req.foodPartner;
+        
+        res.status(200).json({
+            message: "Current food partner retrieved successfully",
+            foodPartner: {
+                _id: foodPartner._id,
+                name: foodPartner.name,
+                email: foodPartner.email,
+                phone: foodPartner.phone,
+                address: foodPartner.address,
+                contactName: foodPartner.contactName
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Error retrieving current food partner", error: error.message });
+    }
+}
+
 module.exports = {
-    getFoodPartnerById
+    getFoodPartnerById,
+    getCurrentFoodPartner
 };

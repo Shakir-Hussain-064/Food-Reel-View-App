@@ -12,6 +12,14 @@ const foodSchema = new mongoose.Schema({
     description:{
         type:String,
     },
+    price:{
+        type:Number,
+        required:true,
+        default:0
+    },
+    imageUrl:{
+        type:String,
+    },
     foodPartner:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"foodpartner"
@@ -20,7 +28,7 @@ const foodSchema = new mongoose.Schema({
        type: Number,
        default: 0
     },
-    saveCount:{
+    savesCount:{
         type: Number,
         default: 0
     },
