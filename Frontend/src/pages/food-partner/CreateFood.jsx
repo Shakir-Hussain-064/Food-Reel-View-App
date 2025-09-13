@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 const CreateFood = () => {
     const [ name, setName ] = useState('');
     const [ description, setDescription ] = useState('');
+    const [ price, setPrice ] = useState('');
     const [ videoFile, setVideoFile ] = useState(null);
     const [ videoURL, setVideoURL ] = useState('');
     const [ fileError, setFileError ] = useState('');
@@ -54,20 +55,25 @@ const CreateFood = () => {
 
         formData.append('name', name);
         formData.append('description', description);
-    // include the original filename for better content-type detection downstream
-    formData.append("video", videoFile, videoFile?.name || 'video.mp4');
+    formData.append("mama", videoFile);
+    formData.append('price', String(price || 0));
 
         const response = await axios.post("http://localhost:3000/api/food", formData, {
             withCredentials: true,
         })
 
         console.log(response.data);
-        navigate("/"); // Redirect to home or another page after successful creation
+        const partnerId = response?.data?.food?.foodPartner;
+        if (partnerId) {
+            navigate(`/food-partner/${partnerId}`);
+        } else {
+            navigate("/");
+        }
         // Optionally reset
         // setName(''); setDescription(''); setVideoFile(null);
     };
 
-    const isDisabled = useMemo(() => !name.trim() || !videoFile, [ name, videoFile ]);
+    const isDisabled = useMemo(() => !name.trim() || !videoFile || price === '' || Number(price) < 0, [ name, videoFile, price ]);
 
     return (
         <div className="create-food-page">
@@ -154,6 +160,22 @@ const CreateFood = () => {
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
                         />
+                    </div>
+
+                    <div className="field-group">
+                        <label htmlFor="foodPrice">Price</label>
+                        <input
+                            id="foodPrice"
+                            type="number"
+                            inputMode="decimal"
+                            min="0"
+                            step="0.01"
+                            placeholder="e.g., 9.99"
+                            value={price}
+                            onChange={(e) => setPrice(e.target.value)}
+                            required
+                        />
+                        <p className="small-note">Enter price in your default currency.</p>
                     </div>
 
                     <div className="form-actions">

@@ -63,5 +63,28 @@ async function authUserMiddleware(req, res, next) {
 
 module.exports = {
     authFoodPartnerMiddleware,
-    authUserMiddleware
+    authUserMiddleware,
+    authAnyMiddleware: async function (req, res, next) {
+        const token = req.cookies.token;
+
+        if (!token) {
+            return res.status(401).json({ message: "Please login first" });
+        }
+
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET)
+
+            // Try user first
+            const user = await userModel.findById(decoded.id);
+            if (user) { req.user = user; return next(); }
+
+            // Then food partner
+            const foodPartner = await foodPartnerModel.findById(decoded.id);
+            if (foodPartner) { req.foodPartner = foodPartner; return next(); }
+
+            return res.status(401).json({ message: "Invalid token" });
+        } catch (err) {
+            return res.status(401).json({ message: "Invalid token" });
+        }
+    }
 }

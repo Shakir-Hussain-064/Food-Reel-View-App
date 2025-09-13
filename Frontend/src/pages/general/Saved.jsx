@@ -9,20 +9,18 @@ const Saved = () => {
     useEffect(() => {
         axios.get("http://localhost:3000/api/food/save", { withCredentials: true })
             .then(response => {
-                // backend returns { foods: [...] } where each item is { user, food }
-                const saved = response.data.foods || response.data.savedFoods || []
-                const savedFoods = saved.map((item) => ({
+                const savedFoods = response.data.savedFoods.map((item) => ({
                     _id: item.food._id,
                     video: item.food.video,
                     description: item.food.description,
+                    price: item.food.price,
                     likeCount: item.food.likeCount,
-                    // backend uses saveCount or savesCount in various places; prefer savesCount
-                    savesCount: item.food.savesCount ?? item.food.saveCount ?? 0,
+                    savesCount: item.food.savesCount,
                     commentsCount: item.food.commentsCount,
                     foodPartner: item.food.foodPartner,
                 }))
                 setVideos(savedFoods)
-            }).catch(() => { /* noop */ })
+            })
     }, [])
 
     const removeSaved = async (item) => {

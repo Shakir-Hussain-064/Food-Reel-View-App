@@ -2,9 +2,13 @@ import React, { useEffect, useState } from 'react'
 import axios from 'axios';
 import '../../styles/reels.css'
 import ReelFeed from '../../components/ReelFeed'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../context/AuthContext'
 
 const Home = () => {
     const [ videos, setVideos ] = useState([])
+    const navigate = useNavigate()
+    const { logoutUser } = useAuth()
     // Autoplay behavior is handled inside ReelFeed
 
     useEffect(() => {
@@ -13,82 +17,63 @@ const Home = () => {
 
                 console.log(response.data);
 
-                setVideos(response.data.food)
+                setVideos(response.data.foodItems)
             })
-            .catch((error) => { 
-                console.error("Error fetching videos:", error);
+            .catch((err) => {
+                const status = err?.response?.status
+                if (status === 401) {
+                    navigate('/user/login')
+                }
             })
     }, [])
 
     // Using local refs within ReelFeed; keeping map here for dependency parity if needed
 
     async function likeVideo(item) {
-        try {
-            const response = await axios.post("http://localhost:3000/api/food/like", { foodId: item._id }, {withCredentials: true});
-            
-            // Get the updated like status from response
-            const isLiked = response.data.like;
-            
-            // Update videos state with the proper count
-            setVideos((prev) => 
-                prev.map((v) => {
-                    if (v._id === item._id) {
-                        // If backend provided the updated count, use it; otherwise calculate
-                        if (response.data.likeCount !== undefined) {
-                            return { ...v, likeCount: response.data.likeCount };
-                        } else {
-                            // Ensure likeCount is a number with default 0
-                            const currentCount = typeof v.likeCount === 'number' ? v.likeCount : 0;
-                            return { ...v, likeCount: isLiked ? currentCount + 1 : currentCount - 1 };
-                        }
-                    }
-                    return v;
-                })
-            );
-            
-            console.log(isLiked ? "Video liked" : "Video unliked");
-        } catch (error) {
-            console.error("Error liking video:", error);
+
+        const response = await axios.post("http://localhost:3000/api/food/like", { foodId: item._id }, {withCredentials: true})
+
+        if(response.data.like){
+            console.log("Video liked");
+            setVideos((prev) => prev.map((v) => v._id === item._id ? { ...v, likeCount: v.likeCount + 1 } : v))
+        }else{
+            console.log("Video unliked");
+            setVideos((prev) => prev.map((v) => v._id === item._id ? { ...v, likeCount: v.likeCount - 1 } : v))
         }
+        
     }
 
     async function saveVideo(item) {
-        try {
-            const response = await axios.post("http://localhost:3000/api/food/save", { foodId: item._id }, { withCredentials: true });
-            
-            // Get the save status from response
-            const isSaved = response.data.save;
-            
-            // Update videos state with the proper count
-            setVideos((prev) => 
-                prev.map((v) => {
-                    if (v._id === item._id) {
-                        // If backend provided the updated count, use it; otherwise calculate
-                        if (response.data.savesCount !== undefined) {
-                            return { ...v, savesCount: response.data.savesCount };
-                        } else {
-                            // Ensure savesCount is a number with default 0
-                            const currentCount = typeof v.savesCount === 'number' ? v.savesCount : 0;
-                            return { ...v, savesCount: isSaved ? currentCount + 1 : currentCount - 1 };
-                        }
-                    }
-                    return v;
-                })
-            );
-            
-            console.log(isSaved ? "Video saved" : "Video unsaved");
-        } catch (error) {
-            console.error("Error saving video:", error);
+        const response = await axios.post("http://localhost:3000/api/food/save", { foodId: item._id }, { withCredentials: true })
+        
+        if(response.data.save){
+            setVideos((prev) => prev.map((v) => v._id === item._id ? { ...v, savesCount: v.savesCount + 1 } : v))
+        }else{
+            setVideos((prev) => prev.map((v) => v._id === item._id ? { ...v, savesCount: v.savesCount - 1 } : v))
         }
     }
 
+    async function handleLogout() {
+        await logoutUser()
+        navigate('/user/login')
+    }
+
     return (
-        <ReelFeed
-            items={videos}
-            onLike={likeVideo}
-            onSave={saveVideo}
-            emptyMessage="No videos available."
-        />
+        <>
+            <button className="icon-btn logout-btn-fixed" onClick={handleLogout} title="Logout" aria-label="Logout">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+            </button>
+            <ReelFeed
+                items={videos}
+                onLike={likeVideo}
+                onSave={saveVideo}
+                emptyMessage="No videos available."
+            />
+        </>
     )
 }
 

@@ -1,27 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import '../../styles/auth-shared.css';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 
 const FoodPartnerLogin = () => {
-
   const navigate = useNavigate();
+  const { loginFoodPartner, error } = useAuth();
+  const [loginError, setLoginError] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoginError('');
 
     const email = e.target.email.value;
     const password = e.target.password.value;
 
-    const response = await axios.post("http://localhost:3000/api/auth/food-partner/login", {
-      email,
-      password
-    }, { withCredentials: true });
-
-    console.log(response.data);
-
-    navigate("/food-partner/" + response.data.foodPartner._id); // Redirect to food partner profile page after login
-
+    try {
+      const foodPartner = await loginFoodPartner(email, password);
+      navigate("/food-partner/" + foodPartner._id); // Redirect to food partner profile page after login
+    } catch (err) {
+      console.error(err);
+      setLoginError(err.response?.data?.message || 'Login failed. Please try again.');
+    }
   };
 
   return (
@@ -31,6 +31,7 @@ const FoodPartnerLogin = () => {
           <h1 id="partner-login-title" className="auth-title">Partner login</h1>
           <p className="auth-subtitle">Access your dashboard and manage orders.</p>
         </header>
+        {loginError && <div className="auth-error">{loginError}</div>}
         <form className="auth-form" onSubmit={handleSubmit} noValidate>
           <div className="field-group">
             <label htmlFor="email">Email</label>
