@@ -25,8 +25,17 @@ const Saved = () => {
 
     const removeSaved = async (item) => {
         try {
-            await axios.post("http://localhost:3000/api/food/save", { foodId: item._id }, { withCredentials: true })
-            setVideos((prev) => prev.map((v) => v._id === item._id ? { ...v, savesCount: Math.max(0, (v.savesCount ?? 1) - 1) } : v))
+            const { data } = await axios.post("http://localhost:3000/api/food/save", { foodId: item._id }, { withCredentials: true })
+            // If backend returns unsaved (no `save` entity), remove from list; otherwise just adjust count defensively
+            if (!data.save) {
+                setVideos((prev) => prev.filter((v) => v._id !== item._id))
+            } else {
+                setVideos((prev) => prev.map((v) => (
+                    v._id === item._id
+                        ? { ...v, savesCount: (typeof v.savesCount === 'number' ? v.savesCount : 0) + 1 }
+                        : v
+                )))
+            }
         } catch {
             // noop
         }

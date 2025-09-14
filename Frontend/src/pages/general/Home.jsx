@@ -45,11 +45,21 @@ const Home = () => {
 
     async function saveVideo(item) {
         const response = await axios.post("http://localhost:3000/api/food/save", { foodId: item._id }, { withCredentials: true })
-        
-        if(response.data.save){
-            setVideos((prev) => prev.map((v) => v._id === item._id ? { ...v, savesCount: v.savesCount + 1 } : v))
-        }else{
-            setVideos((prev) => prev.map((v) => v._id === item._id ? { ...v, savesCount: v.savesCount - 1 } : v))
+
+        if (response.data.save) {
+            // Saved
+            setVideos((prev) => prev.map((v) => (
+                v._id === item._id
+                    ? { ...v, savesCount: (typeof v.savesCount === 'number' ? v.savesCount : 0) + 1 }
+                    : v
+            )))
+        } else {
+            // Unsaved
+            setVideos((prev) => prev.map((v) => (
+                v._id === item._id
+                    ? { ...v, savesCount: Math.max(0, (typeof v.savesCount === 'number' ? v.savesCount : 1) - 1) }
+                    : v
+            )))
         }
     }
 

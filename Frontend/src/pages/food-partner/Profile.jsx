@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import '../../styles/profile.css'
 import { useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
@@ -11,6 +11,9 @@ const Profile = () => {
     const [ profile, setProfile ] = useState(null)
     const [ videos, setVideos ] = useState([])
     const [ deletingId, setDeletingId ] = useState(null)
+    const [ viewerOpen, setViewerOpen ] = useState(false)
+    const [ currentIndex, setCurrentIndex ] = useState(0)
+    const viewerVideoRef = useRef(null)
 
     useEffect(() => {
         axios.get(`http://localhost:3000/api/food-partner/${id}`, { withCredentials: true })
@@ -45,15 +48,42 @@ const Profile = () => {
     }
 
 
+    const openViewer = (index) => {
+        setCurrentIndex(index)
+        setViewerOpen(true)
+    }
+
+    const closeViewer = () => {
+        setViewerOpen(false)
+        // Pause when closing to avoid audio leak
+        try { viewerVideoRef.current?.pause() } catch {}
+    }
+
+    const playHover = (e) => {
+        const v = e.currentTarget
+        if (v && v.paused) {
+            v.play().catch(() => {})
+        }
+    }
+    const pauseHover = (e) => {
+        const v = e.currentTarget
+        if (v) {
+            try { v.pause() } catch {}
+            try { v.currentTime = 0 } catch {}
+        }
+    }
+
     return (
         <main className="profile-page">
-            {/* Back button for users to return to previous page */}
-            <button className="icon-btn back-btn" title="Back" onClick={() => navigate(-1)} aria-label="Back">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <polyline points="15 18 9 12 15 6"/>
-                    <line x1="9" y1="12" x2="21" y2="12"/>
-                </svg>
-            </button>
+            {/* Back button only for non-owners (hide for food-partner owner) */}
+            {!isOwner && (
+                <button className="icon-btn back-btn" title="Back" onClick={() => navigate(-1)} aria-label="Back">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <polyline points="15 18 9 12 15 6"/>
+                        <line x1="9" y1="12" x2="21" y2="12"/>
+                    </svg>
+                </button>
+            )}
             {isOwner && (
                 <button className="icon-btn logout-btn" title="Logout" onClick={handleLogout} aria-label="Logout">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -93,22 +123,27 @@ const Profile = () => {
             <hr className="profile-sep" />
 
             <section className="profile-grid" aria-label="Videos">
-                {videos.map((v) => (
+                {videos.map((v, idx) => (
                     <div key={v._id || v.id || v.video} className="profile-grid-item">
-                        {/* Placeholder tile; replace with <video> or <img> as needed */}
-
-
                         <video
                             className="profile-grid-video"
-                            style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-                            src={v.video} muted loop playsInline></video>
+                            style={{ objectFit: 'cover', width: '100%', height: '100%', cursor: 'pointer' }}
+                            src={v.video}
+                            muted
+                            loop
+                            playsInline
+                            preload="metadata"
+                            onMouseEnter={playHover}
+                            onMouseLeave={pauseHover}
+                            onClick={() => openViewer(idx)}
+                        />
 
                         {isOwner && (v._id || v.id) && (
                             <button
                                 className="icon-btn delete-btn"
                                 title="Delete"
                                 aria-label="Delete"
-                                onClick={() => handleDelete(v._id || v.id)}
+                                onClick={(e) => { e.stopPropagation(); handleDelete(v._id || v.id) }}
                                 disabled={deletingId === (v._id || v.id)}
                                 style={{ position: 'absolute', top: 8, right: 8 }}
                             >
@@ -120,10 +155,40 @@ const Profile = () => {
                                 </svg>
                             </button>
                         )}
-
                     </div>
                 ))}
             </section>
+
+            {viewerOpen && (
+                <div className="reel-viewer" role="dialog" aria-modal="true" onClick={closeViewer}>
+                    <div className="reel-viewer-content" onClick={(e) => e.stopPropagation()}>
+                        <video
+                            ref={viewerVideoRef}
+                            src={videos[currentIndex]?.video}
+                            className="reel-viewer-video"
+                            controls
+                            autoPlay
+                            playsInline
+                            loop
+                            preload="metadata"
+                        />
+                        <button className="icon-btn reel-viewer-close" onClick={closeViewer} aria-label="Close">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                        </button>
+                        <div className="reel-viewer-nav">
+                            <button className="icon-btn" onClick={() => setCurrentIndex((i) => Math.max(0, i - 1))} aria-label="Previous">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                            </button>
+                            <button className="icon-btn" onClick={() => setCurrentIndex((i) => Math.min(videos.length - 1, i + 1))} aria-label="Next">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Floating upload action -> only owner can upload */}
             {isOwner && (
