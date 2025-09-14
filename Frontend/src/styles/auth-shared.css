@@ -11,12 +11,6 @@
   background-attachment: fixed;
 }
 
-@media (prefers-color-scheme: dark) {
-  .auth-page-wrapper {
-    background: radial-gradient(circle at 70% 60%, var(--color-surface-alt) 0%, var(--color-bg) 65%);
-  }
-}
-
 .auth-card {
   width: 100%;
   max-width: 420px;

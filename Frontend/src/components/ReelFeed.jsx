@@ -54,6 +54,32 @@ const ReelFeed = ({ items = [], onLike, onSave, emptyMessage = 'No videos yet.' 
     videoRefs.current.set(id, el)
   }
 
+  // Capture a poster frame from a given video element as data URL
+  const captureFrame = (videoEl) => {
+    try {
+      const w = videoEl.videoWidth || 720
+      const h = videoEl.videoHeight || 1280
+      if (!w || !h) return null
+      const canvas = document.createElement('canvas')
+      canvas.width = w
+      canvas.height = h
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(videoEl, 0, 0, w, h)
+      return canvas.toDataURL('image/jpeg', 0.7)
+    } catch {
+      return null
+    }
+  }
+
+  const handleOrderNow = (item) => {
+    // Try to enrich item with a thumbnail captured from the playing reel
+    const vid = videoRefs.current.get(item._id)
+    const shot = vid ? captureFrame(vid) : null
+    const enriched = shot ? { ...item, thumbnail: item.thumbnail || item.image || shot } : item
+    addItem(enriched, 1)
+    navigate('/cart')
+  }
+
   return (
     <div className="reels-page">
       <div className="reels-feed" role="list">
@@ -69,6 +95,7 @@ const ReelFeed = ({ items = [], onLike, onSave, emptyMessage = 'No videos yet.' 
               ref={setVideoRef(item._id)}
               className="reel-video"
               src={item.video}
+              crossOrigin="anonymous"
               muted
               playsInline
               loop
@@ -123,7 +150,7 @@ const ReelFeed = ({ items = [], onLike, onSave, emptyMessage = 'No videos yet.' 
                   {/* Add to cart then go to cart */}
                   <button
                     className="reel-btn"
-                    onClick={() => { addItem(item, 1); navigate('/cart') }}
+                    onClick={() => handleOrderNow(item)}
                     aria-label="Order now"
                   >
                     Order now

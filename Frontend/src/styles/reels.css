@@ -167,7 +167,7 @@
 .reel-action:active { transform: translateY(1px); }
 
 .reel-action__count {
-  color: #fff;
+  color: rgba(255,255,255,.95);
   text-align: center;
   font-size: 12px;
 }

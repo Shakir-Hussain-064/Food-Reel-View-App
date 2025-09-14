@@ -4,12 +4,11 @@
   position: fixed;
   left: 0; right: 0; bottom: 0;
   height: 56px;
-   background: color-mix(in srgb, #000 35%, transparent);
-  backdrop-filter: blur(2px);
-  color: #fff;
-  border: 1px solid rgba(255,255,255,.15);
-  box-shadow: var(--shadow-md);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  backdrop-filter: blur(6px);
+  color: var(--color-text);
   border-top: 1px solid var(--color-border);
+  box-shadow: 0 -4px 18px -8px rgba(0,0,0,.12);
   z-index: 50;
 }
 
@@ -31,7 +30,7 @@
   gap: 2px;
 }
 
-.bottom-nav__item.is-active { color: var(--color-text); }
+.bottom-nav__item.is-active { color: var(--color-accent); }
 
 .bottom-nav__icon { line-height: 0; }
 
