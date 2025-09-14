@@ -3,6 +3,7 @@ const storageService = require('../services/storage.service');
 const likeModel = require("../models/likes.model")
 const saveModel = require("../models/save.model")
 const { v4: uuid } = require("uuid")
+const mongoose = require('mongoose')
 
 
 async function createFood(req, res) {
@@ -136,11 +137,36 @@ async function getSaveFood(req, res) {
 
 }
 
+async function deleteFood(req, res) {
+    const { id } = req.params;
+    const fp = req.foodPartner;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ message: "Invalid food id" });
+    }
+
+    const food = await foodModel.findById(id);
+    if (!food) {
+        return res.status(404).json({ message: "Food not found" });
+    }
+
+    if (!fp || String(food.foodPartner) !== String(fp._id)) {
+        return res.status(403).json({ message: "Not authorized to delete this food" });
+    }
+
+    // Delete related likes and saves, then the food item
+    await likeModel.deleteMany({ food: id });
+    await saveModel.deleteMany({ food: id });
+    await foodModel.findByIdAndDelete(id);
+
+    return res.status(200).json({ message: "Food deleted successfully" });
+}
 
 module.exports = {
     createFood,
     getFoodItems,
     likeFood,
     saveFood,
-    getSaveFood
+    getSaveFood,
+    deleteFood
 }

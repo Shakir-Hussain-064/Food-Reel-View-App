@@ -10,6 +10,7 @@ const Profile = () => {
     const { logoutFoodPartner, foodPartner } = useAuth()
     const [ profile, setProfile ] = useState(null)
     const [ videos, setVideos ] = useState([])
+    const [ deletingId, setDeletingId ] = useState(null)
 
     useEffect(() => {
         axios.get(`http://localhost:3000/api/food-partner/${id}`, { withCredentials: true })
@@ -28,9 +29,31 @@ const Profile = () => {
 
     const isOwner = Boolean(foodPartner?._id && foodPartner._id === id)
 
+    const handleDelete = async (foodId) => {
+        if (!isOwner) return;
+        // Optimistic UI: mark deleting to disable button
+        setDeletingId(foodId)
+        try {
+            await axios.delete(`http://localhost:3000/api/food/${foodId}`, { withCredentials: true })
+            setVideos(prev => prev.filter(f => (f._id || f.id) !== foodId))
+        } catch (err) {
+            console.error('Delete failed', err)
+            // Optionally show a toast/alert
+        } finally {
+            setDeletingId(null)
+        }
+    }
+
 
     return (
         <main className="profile-page">
+            {/* Back button for users to return to previous page */}
+            <button className="icon-btn back-btn" title="Back" onClick={() => navigate(-1)} aria-label="Back">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="15 18 9 12 15 6"/>
+                    <line x1="9" y1="12" x2="21" y2="12"/>
+                </svg>
+            </button>
             {isOwner && (
                 <button className="icon-btn logout-btn" title="Logout" onClick={handleLogout} aria-label="Logout">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -80,6 +103,23 @@ const Profile = () => {
                             style={{ objectFit: 'cover', width: '100%', height: '100%' }}
                             src={v.video} muted loop playsInline></video>
 
+                        {isOwner && (v._id || v.id) && (
+                            <button
+                                className="icon-btn delete-btn"
+                                title="Delete"
+                                aria-label="Delete"
+                                onClick={() => handleDelete(v._id || v.id)}
+                                disabled={deletingId === (v._id || v.id)}
+                                style={{ position: 'absolute', top: 8, right: 8 }}
+                            >
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                    <polyline points="3 6 5 6 21 6"/>
+                                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                                    <path d="M10 11v6M14 11v6"/>
+                                    <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+                                </svg>
+                            </button>
+                        )}
 
                     </div>
                 ))}

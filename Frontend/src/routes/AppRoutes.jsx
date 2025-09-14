@@ -7,9 +7,12 @@ import FoodPartnerRegister from '../pages/auth/FoodPartnerRegister';
 import FoodPartnerLogin from '../pages/auth/FoodPartnerLogin';
 import Home from '../pages/general/Home';
 import Saved from '../pages/general/Saved';
+import Cart from '../pages/general/Cart';
 import BottomNav from '../components/BottomNav';
 import CreateFood from '../pages/food-partner/CreateFood';
 import Profile from '../pages/food-partner/Profile';
+import Checkout from '../pages/general/Checkout';
+import Payment from '../pages/general/Payment';
 
 const AppRoutes = () => {
     return (
@@ -22,8 +25,11 @@ const AppRoutes = () => {
                 <Route path="/food-partner/login" element={<FoodPartnerLogin />} />
                 <Route path="/" element={<><Home /><BottomNav /></>} />
                 <Route path="/saved" element={<><Saved /><BottomNav /></>} />
+                <Route path="/cart" element={<><Cart /><BottomNav /></>} />
                 <Route path="/create-food" element={<CreateFood />} />
                 <Route path="/food-partner/:id" element={<Profile />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/payment" element={<Payment />} />
             </Routes>
         
     )

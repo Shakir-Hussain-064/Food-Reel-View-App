@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useCart } from '../context/CartContext'
 
 // Reusable feed for vertical reels
 // Props:
@@ -9,6 +10,8 @@ import { Link } from 'react-router-dom'
 // - emptyMessage: string
 const ReelFeed = ({ items = [], onLike, onSave, emptyMessage = 'No videos yet.' }) => {
   const videoRefs = useRef(new Map())
+  const { addItem } = useCart()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -16,10 +19,26 @@ const ReelFeed = ({ items = [], onLike, onSave, emptyMessage = 'No videos yet.' 
         entries.forEach((entry) => {
           const video = entry.target
           if (!(video instanceof HTMLVideoElement)) return
+          // Play when sufficiently visible; pause otherwise.
           if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
+            // Active reel: play it
             video.play().catch(() => { /* ignore autoplay errors */ })
+            // Reset all other videos so going back restarts from beginning
+            videoRefs.current.forEach((vEl) => {
+              if (vEl !== video) {
+                try { vEl.pause() } catch {}
+                try { vEl.currentTime = 0 } catch {}
+              }
+            })
           } else {
-            video.pause()
+            // If the reel is no longer intersecting at all, reset to start
+            if (!entry.isIntersecting || entry.intersectionRatio === 0) {
+              try { video.pause() } catch {}
+              try { video.currentTime = 0 } catch {}
+            } else {
+              // Partially visible but not the active one: just pause
+              try { video.pause() } catch {}
+            }
           }
         })
       },
@@ -100,9 +119,20 @@ const ReelFeed = ({ items = [], onLike, onSave, emptyMessage = 'No videos yet.' 
                   <div className="reel-price" aria-label="Price">₹ {item.price.toFixed(2)}</div>
                 )}
                 <p className="reel-description" title={item.description}>{item.description}</p>
-                {item.foodPartner && (
-                  <Link className="reel-btn" to={"/food-partner/" + item.foodPartner} aria-label="Visit store">Visit store</Link>
-                )}
+                <div className="reel-btn-row">
+                  {/* Add to cart then go to cart */}
+                  <button
+                    className="reel-btn"
+                    onClick={() => { addItem(item, 1); navigate('/cart') }}
+                    aria-label="Order now"
+                  >
+                    Order now
+                  </button>
+
+                  {item.foodPartner && (
+                    <Link className="reel-btn secondary" to={"/food-partner/" + item.foodPartner} aria-label="Visit store">Visit store</Link>
+                  )}
+                </div>
               </div>
             </div>
           </section>

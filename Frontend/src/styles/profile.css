@@ -98,8 +98,10 @@
 }
 
 .profile-grid-item { 
-    border: none;
-    aspect-ratio: 3 / 4; }
+  border: none;
+  aspect-ratio: 3 / 4;
+  position: relative;
+}
 
 .profile-grid-video {
   display: grid;
@@ -146,6 +148,12 @@
   position: absolute;
   top: 16px;
   right: 16px;
+}
+
+.back-btn {
+  position: absolute;
+  top: 16px;
+  left: 16px;
 }
 
 .fab-upload {

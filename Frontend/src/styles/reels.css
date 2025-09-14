@@ -129,6 +129,11 @@
 .reel-btn:active { transform: translateY(1px); }
 .reel-btn:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 
+.reel-btn.secondary { background: color-mix(in srgb, #000 35%, transparent); border: 1px solid rgba(255,255,255,.2); }
+.reel-btn.secondary:hover { background: color-mix(in srgb, #000 45%, transparent); }
+
+.reel-btn-row { display: flex; gap: 10px; }
+
 /* Desktop tweaks */
 @media (min-width: 768px) {
   .reel-content { padding: 36px; }

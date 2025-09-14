@@ -39,6 +39,12 @@ router.get('/save',
     foodController.getSaveFood
 )
 
+// DELETE /api/food/:id [protected - foodPartner]
+router.delete('/:id',
+    authMiddleware.authFoodPartnerMiddleware,
+    foodController.deleteFood
+)
+
 
 
 module.exports = router
