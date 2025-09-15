@@ -9,7 +9,7 @@ const app = express();
 app.use(cookieParser());
 app.use(express.json());  //middleware hai jisse data read karta hai server
 app.use(cors({
-    origin: 'https://food-reel-view-app.onrender.com',
+    origin: 'https://food-reel-view-app-1.onrender.com', 
     credentials: true
 }));
 
