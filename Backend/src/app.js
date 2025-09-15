@@ -14,7 +14,7 @@ app.use(cors({
 }));
 
 
-app.get('/', (req,res)=>{
+app.get('/register', (req,res)=>{
     res.send("Hello World");
 })
 
