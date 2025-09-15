@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
 
   axios.defaults.baseURL = "http://localhost:3000/api";
   axios.defaults.withCredentials = true;
-
+ 
   useEffect(() => {
     // You can add logic here to verify the token and get user/food partner info
     // For now, we'll just set the token from local storage
