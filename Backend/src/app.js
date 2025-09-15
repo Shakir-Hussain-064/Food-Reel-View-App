@@ -18,8 +18,8 @@ app.get('/', (req,res)=>{
     res.send("Hello World");
 })
 
-app.use('/api/auth', authRoutes);
-app.use('/api/food', foodRoutes);
-app.use('/api/food-partner', foodPartnerRoutes);
+app.use('https://food-reel-view-app-1.onrender.com/api/auth', authRoutes);
+app.use('https://food-reel-view-app-1.onrender.com/api/food', foodRoutes);
+app.use('https://food-reel-view-app-1.onrender.com/api/food-partner', foodPartnerRoutes);
 
 module.exports = app;  
