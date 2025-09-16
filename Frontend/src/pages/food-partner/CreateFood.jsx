@@ -58,7 +58,7 @@ const CreateFood = () => {
     formData.append("mama", videoFile);
     formData.append('price', String(price || 0));
 
-        const response = await axios.post("http://localhost:3000/api/food", formData, {
+        const response = await axios.post("https://food-reel-view-app.onrender.com/api/food", formData, {
             withCredentials: true,
         })
 

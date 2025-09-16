@@ -7,7 +7,7 @@ const Saved = () => {
     const [ videos, setVideos ] = useState([])
 
     useEffect(() => {
-        axios.get("http://localhost:3000/api/food/save", { withCredentials: true })
+        axios.get("https://food-reel-view-app.onrender.com/api/food/save", { withCredentials: true })
             .then(response => {
                 const savedFoods = response.data.savedFoods.map((item) => ({
                     _id: item.food._id,
@@ -25,7 +25,7 @@ const Saved = () => {
 
     const removeSaved = async (item) => {
         try {
-            const { data } = await axios.post("http://localhost:3000/api/food/save", { foodId: item._id }, { withCredentials: true })
+            const { data } = await axios.post("https://food-reel-view-app.onrender.com/api/food/save", { foodId: item._id }, { withCredentials: true })
             // If backend returns unsaved (no `save` entity), remove from list; otherwise just adjust count defensively
             if (!data.save) {
                 setVideos((prev) => prev.filter((v) => v._id !== item._id))

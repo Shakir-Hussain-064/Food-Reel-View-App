@@ -16,7 +16,7 @@ const Profile = () => {
     const viewerVideoRef = useRef(null)
 
     useEffect(() => {
-        axios.get(`http://localhost:3000/api/food-partner/${id}`, { withCredentials: true })
+        axios.get(`https://food-reel-view-app.onrender.com/api/food-partner/${id}`, { withCredentials: true })
             .then(response => {
                 setProfile(response.data.foodPartner)
                 setVideos(response.data.foodPartner.foodItems)
@@ -37,7 +37,7 @@ const Profile = () => {
         // Optimistic UI: mark deleting to disable button
         setDeletingId(foodId)
         try {
-            await axios.delete(`http://localhost:3000/api/food/${foodId}`, { withCredentials: true })
+            await axios.delete(`https://food-reel-view-app.onrender.com/api/food/${foodId}`, { withCredentials: true })
             setVideos(prev => prev.filter(f => (f._id || f.id) !== foodId))
         } catch (err) {
             console.error('Delete failed', err)
