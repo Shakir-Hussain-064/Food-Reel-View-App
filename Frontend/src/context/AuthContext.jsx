@@ -8,7 +8,8 @@ export const AuthProvider = ({ children }) => {
   const [foodPartner, setFoodPartner] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token"));
 
-  axios.defaults.baseURL = "https://food-reel-view-app.onrender.com";
+  // Use local backend during development. Backend routes are mounted under /api.
+  axios.defaults.baseURL = "http://localhost:3000/api";
   axios.defaults.withCredentials = true;
  
   useEffect(() => {
