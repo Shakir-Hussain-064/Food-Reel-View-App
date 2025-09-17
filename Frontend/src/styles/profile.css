@@ -125,7 +125,7 @@
   position: relative;
   width: min(94vw, 640px);
   aspect-ratio: 9/16;
-  background: #000;
+  background: var(--color-bg);
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid rgba(255,255,255,.1);
@@ -140,7 +140,7 @@
   top: 8px;
   right: 8px;
   background: rgba(0,0,0,.5);
-  color: #fff;
+  color: var(--color-text);
   border-color: rgba(255,255,255,.2);
 }
 .reel-viewer-nav {

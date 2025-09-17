@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
       throw error;
     }
   };
-
+  
   const logoutUser = async () => {
     try {
       await axios.get("/auth/user/logout", { withCredentials: true });

@@ -1,15 +1,15 @@
-/* CSS Theme Variables (Forced Light Theme) */
+/* CSS Theme Variables (Dark Theme) */
 :root {
-  --color-bg: #f9fafb;
-  --color-surface: #ffffff;
-  --color-surface-alt: #f1f5f9;
-  --color-border: #e2e8f0;
-  --color-text: #0f172a;
-  --color-text-secondary: #475569;
-  --color-text-muted: #64748b;
-  --color-accent: #2563eb;
-  --color-accent-hover: #1d4ed8;
-  --color-danger: #dc2626;
+  --color-bg: #18181b;
+  --color-surface: #23232a;
+  --color-surface-alt: #1e1e23;
+  --color-border: #2d2d34;
+  --color-text: #f3f4f6;
+  --color-text-secondary: #a1a1aa;
+  --color-text-muted: #71717a;
+  --color-accent: #6366f1;
+  --color-accent-hover: #818cf8;
+  --color-danger: #ef4444;
 
   --radius-xs: 2px;
   --radius-sm: 4px;
@@ -25,13 +25,13 @@
   --space-6: 24px;
   --space-8: 32px;
 
-  --shadow-sm: 0 1px 2px rgba(0,0,0,.06);
-  --shadow-md: 0 4px 12px -2px rgba(0,0,0,.08),0 2px 4px -2px rgba(0,0,0,.06);
+  --shadow-sm: 0 1px 2px rgba(0,0,0,.16);
+  --shadow-md: 0 4px 12px -2px rgba(0,0,0,.28),0 2px 4px -2px rgba(0,0,0,.18);
 
   --transition-base: 120ms cubic-bezier(.4,0,.2,1);
 
-  /* Hint UA to render form controls in light mode where supported */
-  color-scheme: light;
+  /* Hint UA to render form controls in dark mode where supported */
+  color-scheme: dark;
 }
 
 /* Base element theming (can be imported once globally) */
@@ -48,6 +48,9 @@ a {
   text-decoration: none;
   transition: color var(--transition-base);
 }
+
+a:hover, a:focus-visible { color: var(--color-accent-hover); }
+::selection { background: var(--color-accent); color: #fff; }
 
 a:hover, a:focus-visible { color: var(--color-accent-hover); }
 
