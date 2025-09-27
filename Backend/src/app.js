@@ -15,7 +15,7 @@ app.use(cors({
 
 
 app.get('/', (req,res)=>{
-    res.send("Hello World");
+    res.send("Site is working properly..");
 })
 
 app.use('/api/auth', authRoutes);
