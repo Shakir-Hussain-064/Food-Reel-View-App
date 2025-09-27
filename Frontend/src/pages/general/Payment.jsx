@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useLocation, useNavigate, Link } from 'react-router-dom'
 import { useCart } from '../../context/CartContext'
+import toastService from '../../services/toast.service'
 import '../../styles/checkout.css'
 
 export default function Payment() {
@@ -45,27 +46,69 @@ export default function Payment() {
       const cvv = card.cvv.trim()
       const name = card.name.trim()
       const expiryOk = /^(0[1-9]|1[0-2])\/(\d{2})$/.test(mmYy)
-      if (!name) return setError('Enter cardholder name')
-      if (!/^\d{13,19}$/.test(num)) return setError('Enter a valid card number')
-      if (!expiryOk) return setError('Enter expiry as MM/YY')
-      if (!/^\d{3,4}$/.test(cvv)) return setError('Enter a valid CVV')
+      if (!name) {
+        setError('Enter cardholder name')
+        toastService.error('Please enter cardholder name')
+        return
+      }
+      if (!/^\d{13,19}$/.test(num)) {
+        setError('Enter a valid card number')
+        toastService.error('Please enter a valid card number')
+        return
+      }
+      if (!expiryOk) {
+        setError('Enter expiry as MM/YY')
+        toastService.error('Please enter expiry as MM/YY')
+        return
+      }
+      if (!/^\d{3,4}$/.test(cvv)) {
+        setError('Enter a valid CVV')
+        toastService.error('Please enter a valid CVV')
+        return
+      }
     }
     if (method === 'upi') {
-      if (!/^\w+[.\-]?\w*@\w+$/.test(upiId.trim())) return setError('Enter a valid UPI ID')
+      if (!/^\w+[.\-]?\w*@\w+$/.test(upiId.trim())) {
+        setError('Enter a valid UPI ID')
+        toastService.error('Please enter a valid UPI ID')
+        return
+      }
     }
 
     setError('')
     setProcessing(true)
-    // Simulate processing. In real app, call backend to create payment intent/session.
-    setTimeout(() => {
-      setProcessing(false)
-      try { clearCart() } catch {}
+    
+    try {
+      // Show processing toast
+      const processingToast = toastService.loading('Processing payment...')
+      
+      // Simulate processing. In real app, call backend to create payment intent/session.
+      await new Promise(resolve => setTimeout(resolve, 1200))
+      
+      // Dismiss processing toast
+      toastService.dismiss(processingToast)
+      
+      // Clear cart
+      try { clearCart() } catch (error) {
+        console.error('Failed to clear cart:', error)
+      }
+      
+      // Show success message
+      toastService.success('Payment successful! 🎉')
+      
       // Show ordered overlay, then navigate back to reels after short delay
       setShowOverlay(true)
       setTimeout(() => {
         navigate('/', { replace: true, state: { paid: true, orderId: Date.now() } })
       }, 1300)
-    }, 1200)
+      
+    } catch (error) {
+      console.error('Payment processing failed:', error)
+      toastService.error('Payment failed. Please try again.')
+      setError('Payment failed. Please try again.')
+    } finally {
+      setProcessing(false)
+    }
   }
 
   return (

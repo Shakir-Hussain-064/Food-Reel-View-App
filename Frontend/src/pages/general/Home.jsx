@@ -1,71 +1,117 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios';
 import '../../styles/reels.css'
 import ReelFeed from '../../components/ReelFeed'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { apiRequest } from '../../config/axios.config'
+import toastService from '../../services/toast.service'
 
 const Home = () => {
     const [ videos, setVideos ] = useState([])
+    const [ loading, setLoading ] = useState(true)
     const navigate = useNavigate()
     const { logoutUser } = useAuth()
     // Autoplay behavior is handled inside ReelFeed
 
     useEffect(() => {
-        axios.get("http://localhost:3000/api/food", { withCredentials: true })
-            .then(response => {
-
-                console.log(response.data);
-
-                setVideos(response.data.foodItems)
-            })
-            .catch((err) => {
-                const status = err?.response?.status
-                if (status === 401) {
-                    navigate('/user/login')
-                }
-            })
+        loadFoodItems()
     }, [])
+
+    const loadFoodItems = async () => {
+        try {
+            setLoading(true)
+            const response = await apiRequest.get('/food')
+            console.log('Food items loaded successfully:', response.data)
+            setVideos(response.data.foodItems)
+        } catch (err) {
+            console.error('Failed to load food items:', err)
+            const status = err?.response?.status
+            if (status === 401) {
+                toastService.info('Please login to view food items')
+                navigate('/user/login')
+            }
+            // Other errors are handled by axios interceptor
+        } finally {
+            setLoading(false)
+        }
+    }
 
     // Using local refs within ReelFeed; keeping map here for dependency parity if needed
 
     async function likeVideo(item) {
+        try {
+            const response = await apiRequest.post('/food/like', { foodId: item._id })
 
-        const response = await axios.post("http://localhost:3000/api/food/like", { foodId: item._id }, {withCredentials: true})
-
-        if(response.data.like){
-            console.log("Video liked");
-            setVideos((prev) => prev.map((v) => v._id === item._id ? { ...v, likeCount: v.likeCount + 1 } : v))
-        }else{
-            console.log("Video unliked");
-            setVideos((prev) => prev.map((v) => v._id === item._id ? { ...v, likeCount: v.likeCount - 1 } : v))
+            if(response.data.like){
+                console.log("Video liked");
+                setVideos((prev) => prev.map((v) => v._id === item._id ? { ...v, likeCount: v.likeCount + 1 } : v))
+                toastService.success('Added to favorites! ❤️')
+            }else{
+                console.log("Video unliked");
+                setVideos((prev) => prev.map((v) => v._id === item._id ? { ...v, likeCount: v.likeCount - 1 } : v))
+                toastService.info('Removed from favorites')
+            }
+        } catch (error) {
+            console.error('Failed to like/unlike video:', error)
+            // Error toast is handled by axios interceptor
         }
-        
     }
 
     async function saveVideo(item) {
-        const response = await axios.post("http://localhost:3000/api/food/save", { foodId: item._id }, { withCredentials: true })
+        try {
+            const response = await apiRequest.post('/food/save', { foodId: item._id })
 
-        if (response.data.save) {
-            // Saved
-            setVideos((prev) => prev.map((v) => (
-                v._id === item._id
-                    ? { ...v, savesCount: (typeof v.savesCount === 'number' ? v.savesCount : 0) + 1 }
-                    : v
-            )))
-        } else {
-            // Unsaved
-            setVideos((prev) => prev.map((v) => (
-                v._id === item._id
-                    ? { ...v, savesCount: Math.max(0, (typeof v.savesCount === 'number' ? v.savesCount : 1) - 1) }
-                    : v
-            )))
+            if (response.data.save) {
+                // Saved
+                setVideos((prev) => prev.map((v) => (
+                    v._id === item._id
+                        ? { ...v, savesCount: (typeof v.savesCount === 'number' ? v.savesCount : 0) + 1 }
+                        : v
+                )))
+                toastService.success('Saved for later! 🔖')
+            } else {
+                // Unsaved
+                setVideos((prev) => prev.map((v) => (
+                    v._id === item._id
+                        ? { ...v, savesCount: Math.max(0, (typeof v.savesCount === 'number' ? v.savesCount : 1) - 1) }
+                        : v
+                )))
+                toastService.info('Removed from saved items')
+            }
+        } catch (error) {
+            console.error('Failed to save/unsave video:', error)
+            // Error toast is handled by axios interceptor
         }
     }
 
     async function handleLogout() {
-        await logoutUser()
-        navigate('/user/login')
+        try {
+            await logoutUser()
+            toastService.success('Logged out successfully')
+            navigate('/user/login')
+        } catch (error) {
+            console.error('Logout failed:', error)
+            toastService.error('Failed to logout. Please try again.')
+        }
+    }
+
+    if (loading) {
+        return (
+            <div className="reels-page">
+                <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    height: '100vh',
+                    color: 'var(--color-text-secondary)'
+                }}>
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🍽️</div>
+                        <p>Loading delicious content...</p>
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     return (

@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import axios from 'axios';
 import '../../styles/create-food.css';
 import { useNavigate } from 'react-router-dom';
+import { apiRequest } from '../../config/axios.config';
+import toastService from '../../services/toast.service';
 
 const CreateFood = () => {
     const [ name, setName ] = useState('');
@@ -10,6 +11,7 @@ const CreateFood = () => {
     const [ videoFile, setVideoFile ] = useState(null);
     const [ videoURL, setVideoURL ] = useState('');
     const [ fileError, setFileError ] = useState('');
+    const [ isSubmitting, setIsSubmitting ] = useState(false);
     const fileInputRef = useRef(null);
 
     const navigate = useNavigate();
@@ -51,29 +53,64 @@ const CreateFood = () => {
     const onSubmit = async (e) => {
         e.preventDefault();
 
-        const formData = new FormData();
-
-        formData.append('name', name);
-        formData.append('description', description);
-    formData.append("mama", videoFile);
-    formData.append('price', String(price || 0));
-
-        const response = await axios.post("http://localhost:3000/api/food", formData, {
-            withCredentials: true,
-        })
-
-        console.log(response.data);
-        const partnerId = response?.data?.food?.foodPartner;
-        if (partnerId) {
-            navigate(`/food-partner/${partnerId}`);
-        } else {
-            navigate("/");
+        // Validation
+        if (!name.trim()) {
+            toastService.error('Please enter a food name');
+            return;
         }
-        // Optionally reset
-        // setName(''); setDescription(''); setVideoFile(null);
+
+        if (!videoFile) {
+            toastService.error('Please select a video file');
+            return;
+        }
+
+        if (price === '' || isNaN(Number(price)) || Number(price) < 0) {
+            toastService.error('Please enter a valid price');
+            return;
+        }
+
+        try {
+            setIsSubmitting(true);
+
+            const formData = new FormData();
+            formData.append('name', name.trim());
+            formData.append('description', description.trim());
+            formData.append("mama", videoFile);
+            formData.append('price', String(price || 0));
+
+            const response = await apiRequest.withToasts(
+                () => apiRequest.post('/food', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }),
+                {
+                    loading: 'Creating your food item...',
+                    success: 'Food item created successfully! 🎉',
+                }
+            );
+
+            console.log('Food created successfully:', response.data);
+            
+            const partnerId = response?.data?.food?.foodPartner;
+            if (partnerId) {
+                navigate(`/food-partner/${partnerId}`);
+            } else {
+                navigate("/");
+            }
+            
+        } catch (error) {
+            console.error('Failed to create food item:', error);
+            // Error toast is handled by axios interceptor
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
-    const isDisabled = useMemo(() => !name.trim() || !videoFile || price === '' || Number(price) < 0, [ name, videoFile, price ]);
+    const isDisabled = useMemo(() => 
+        !name.trim() || !videoFile || price === '' || Number(price) < 0 || isSubmitting, 
+        [ name, videoFile, price, isSubmitting ]
+    );
 
     return (
         <div className="create-food-page">
@@ -180,7 +217,7 @@ const CreateFood = () => {
 
                     <div className="form-actions">
                         <button className="btn-primary" type="submit" disabled={isDisabled}>
-                            Save Food
+                            {isSubmitting ? 'Creating...' : 'Save Food'}
                         </button>
                     </div>
                 </form>

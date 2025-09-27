@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
 import '../../styles/profile.css'
 import { useNavigate, useParams } from 'react-router-dom'
-import axios from 'axios'
 import { useAuth } from '../../context/AuthContext'
+import { apiRequest } from '../../config/axios.config'
+import toastService from '../../services/toast.service'
 
 const Profile = () => {
     const { id } = useParams()
@@ -13,19 +14,38 @@ const Profile = () => {
     const [ deletingId, setDeletingId ] = useState(null)
     const [ viewerOpen, setViewerOpen ] = useState(false)
     const [ currentIndex, setCurrentIndex ] = useState(0)
+    const [ loading, setLoading ] = useState(true)
     const viewerVideoRef = useRef(null)
 
     useEffect(() => {
-        axios.get(`http://localhost:3000/api/food-partner/${id}`, { withCredentials: true })
-            .then(response => {
-                setProfile(response.data.foodPartner)
-                setVideos(response.data.foodPartner.foodItems)
-            })
+        loadProfile()
     }, [ id ])
 
+    const loadProfile = async () => {
+        try {
+            setLoading(true)
+            const response = await apiRequest.get(`/food-partner/${id}`)
+            setProfile(response.data.foodPartner)
+            setVideos(response.data.foodPartner.foodItems)
+            console.log('Profile loaded successfully:', response.data.foodPartner.name)
+        } catch (error) {
+            console.error('Failed to load profile:', error)
+            // Error toast is handled by axios interceptor
+        } finally {
+            setLoading(false)
+        }
+    }
+
     const handleLogout = async () => {
-        await logoutFoodPartner()
-        navigate('/food-partner/login')
+        try {
+            await logoutFoodPartner()
+            toastService.success('Logged out successfully')
+            navigate('/food-partner/login')
+        } catch (error) {
+            console.error('Logout failed:', error)
+            // Still navigate even if logout request fails
+            navigate('/food-partner/login')
+        }
     }
 
     const goToCreateFood = () => navigate('/create-food')
@@ -34,14 +54,29 @@ const Profile = () => {
 
     const handleDelete = async (foodId) => {
         if (!isOwner) return;
-        // Optimistic UI: mark deleting to disable button
-        setDeletingId(foodId)
+        
+        // Show confirmation
+        if (!window.confirm('Are you sure you want to delete this food item?')) {
+            return;
+        }
+
         try {
-            await axios.delete(`http://localhost:3000/api/food/${foodId}`, { withCredentials: true })
+            // Optimistic UI: mark deleting to disable button
+            setDeletingId(foodId)
+            
+            await apiRequest.withToasts(
+                () => apiRequest.delete(`/food/${foodId}`),
+                {
+                    loading: 'Deleting food item...',
+                    success: 'Food item deleted successfully',
+                }
+            )
+            
             setVideos(prev => prev.filter(f => (f._id || f.id) !== foodId))
-        } catch (err) {
-            console.error('Delete failed', err)
-            // Optionally show a toast/alert
+            
+        } catch (error) {
+            console.error('Delete failed:', error)
+            // Error toast is handled by axios interceptor
         } finally {
             setDeletingId(null)
         }
@@ -71,6 +106,59 @@ const Profile = () => {
             try { v.pause() } catch {}
             try { v.currentTime = 0 } catch {}
         }
+    }
+
+    if (loading) {
+        return (
+            <div className="profile-page">
+                <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    height: '50vh',
+                    color: 'var(--color-text-secondary)'
+                }}>
+                    <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>👨‍🍳</div>
+                        <p>Loading profile...</p>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    if (!profile) {
+        return (
+            <div className="profile-page">
+                <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    height: '50vh',
+                    color: 'var(--color-text-secondary)',
+                    textAlign: 'center'
+                }}>
+                    <div>
+                        <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>😕</div>
+                        <p>Profile not found</p>
+                        <button 
+                            onClick={() => navigate(-1)} 
+                            style={{ 
+                                marginTop: '1rem', 
+                                padding: '8px 16px', 
+                                background: 'var(--color-accent)', 
+                                color: '#fff',
+                                border: 'none',
+                                borderRadius: '6px',
+                                cursor: 'pointer'
+                            }}
+                        >
+                            Go Back
+                        </button>
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     return (

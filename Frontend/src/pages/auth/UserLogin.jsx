@@ -1,27 +1,50 @@
-import React from 'react';
+import React, { useState } from 'react';
 import '../../styles/auth-shared.css';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { apiRequest } from '../../config/axios.config';
+import toastService from '../../services/toast.service';
 
 const UserLogin = () => {
-
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
     const email = e.target.email.value;
     const password = e.target.password.value;
 
-    const response = await axios.post("http://localhost:3000/api/auth/user/login", {
-      email,
-      password
-    }, { withCredentials: true });
+    // Basic validation
+    if (!email || !password) {
+      toastService.error('Please fill in all fields');
+      return;
+    }
 
-    console.log(response.data);
+    if (!email.includes('@')) {
+      toastService.error('Please enter a valid email address');
+      return;
+    }
 
-    navigate("/"); // Redirect to home after login
+    try {
+      setLoading(true);
+      
+      const response = await apiRequest.withToasts(
+        () => apiRequest.post('/auth/user/login', { email, password }),
+        {
+          loading: 'Signing in...',
+          success: 'Welcome back! 🎉',
+        }
+      );
 
+      console.log('Login successful:', response.data);
+      navigate("/"); // Redirect to home after login
+      
+    } catch (error) {
+      console.error('Login failed:', error);
+      // Error toast is handled by axios interceptor
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -40,7 +63,9 @@ const UserLogin = () => {
             <label htmlFor="password">Password</label>
             <input id="password" name="password" type="password" placeholder="••••••••" autoComplete="current-password" />
           </div>
-          <button className="auth-submit" type="submit">Sign In</button>
+          <button className="auth-submit" type="submit" disabled={loading}>
+            {loading ? 'Signing In...' : 'Sign In'}
+          </button>
         </form>
         <div className="auth-alt-action">
           New here? <a href="/user/register">Create account</a>

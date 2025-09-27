@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import axios from "axios";
+import { apiRequest } from "../config/axios.config";
+import toastService from "../services/toast.service";
 
 const AuthContext = createContext();
 
@@ -7,10 +8,6 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [foodPartner, setFoodPartner] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token"));
-
-  // Use local backend during development. Backend routes are mounted under /api.
-  axios.defaults.baseURL = "http://localhost:3000/api";
-  axios.defaults.withCredentials = true;
  
   useEffect(() => {
     // You can add logic here to verify the token and get user/food partner info
@@ -19,23 +16,25 @@ export const AuthProvider = ({ children }) => {
 
   const loginUser = async (email, password) => {
     try {
-      const response = await axios.post("/auth/user/login", { email, password });
+      const response = await apiRequest.post("/auth/user/login", { email, password });
       const { user, token } = response.data;
       setUser(user);
       setToken(token);
       localStorage.setItem("token", token);
       return user;
     } catch (error) {
-      console.error("Login failed", error);
+      console.error("User login failed", error);
       throw error;
     }
   };
   
   const logoutUser = async () => {
     try {
-      await axios.get("/auth/user/logout", { withCredentials: true });
-    } catch (e) {
-      // ignore network errors, still clear client state
+      await apiRequest.get("/auth/user/logout");
+      console.log("User logged out successfully");
+    } catch (error) {
+      console.error("Logout request failed", error);
+      // Don't show error toast for logout failures, just continue with client cleanup
     } finally {
       setUser(null);
       setToken(null);
@@ -45,7 +44,7 @@ export const AuthProvider = ({ children }) => {
 
   const loginFoodPartner = async (email, password) => {
     try {
-      const response = await axios.post("/auth/food-partner/login", { email, password });
+      const response = await apiRequest.post("/auth/food-partner/login", { email, password });
       const { foodPartner, token } = response.data;
       setFoodPartner(foodPartner);
       setToken(token);
@@ -59,9 +58,11 @@ export const AuthProvider = ({ children }) => {
 
   const logoutFoodPartner = async () => {
     try {
-      await axios.get("/auth/food-partner/logout", { withCredentials: true });
-    } catch (e) {
-      // ignore
+      await apiRequest.get("/auth/food-partner/logout");
+      console.log("Food partner logged out successfully");
+    } catch (error) {
+      console.error("Food partner logout request failed", error);
+      // Don't show error toast for logout failures, just continue with client cleanup
     } finally {
       setFoodPartner(null);
       setToken(null);

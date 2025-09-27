@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../../styles/auth-shared.css';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { apiRequest } from '../../config/axios.config';
+import toastService from '../../services/toast.service';
 
 const UserRegister = () => {
-
     const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -16,20 +17,46 @@ const UserRegister = () => {
         const email = e.target.email.value;
         const password = e.target.password.value;
 
+        // Basic validation
+        if (!firstName.trim() || !lastName.trim() || !email || !password) {
+            toastService.error('Please fill in all fields');
+            return;
+        }
 
-        const response = await axios.post("http://localhost:3000/api/auth/user/register", {
-            fullName: firstName + " " + lastName,
-            email,
-            password
-        },
-        {
-            withCredentials: true
-        })
+        if (!email.includes('@')) {
+            toastService.error('Please enter a valid email address');
+            return;
+        }
 
-        console.log(response.data);
+        if (password.length < 6) {
+            toastService.error('Password must be at least 6 characters long');
+            return;
+        }
 
-        navigate("/user/login")
+        try {
+            setLoading(true);
 
+            const response = await apiRequest.withToasts(
+                () => apiRequest.post('/auth/user/register', {
+                    fullName: firstName.trim() + " " + lastName.trim(),
+                    email,
+                    password
+                }),
+                {
+                    loading: 'Creating your account...',
+                    success: 'Account created successfully! Please login to continue.',
+                }
+            );
+
+            console.log('Registration successful:', response.data);
+            navigate("/user/login");
+
+        } catch (error) {
+            console.error('Registration failed:', error);
+            // Error toast is handled by axios interceptor
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -61,7 +88,9 @@ const UserRegister = () => {
                         <label htmlFor="password">Password</label>
                         <input id="password" name="password" type="password" placeholder="••••••••" autoComplete="new-password" />
                     </div>
-                    <button className="auth-submit" type="submit">Sign Up</button>
+                    <button className="auth-submit" type="submit" disabled={loading}>
+                        {loading ? 'Creating Account...' : 'Sign Up'}
+                    </button>
                 </form>
                 <div className="auth-alt-action">
                     Already have an account? <Link to="/user/login">Sign in</Link>
